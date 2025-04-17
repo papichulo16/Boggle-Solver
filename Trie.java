@@ -16,6 +16,9 @@ public class Trie {
             if (current.data == target)
                 break;
             
+            if (current.data > target)
+                return null;
+            
             current = current.sibling;
         }
         

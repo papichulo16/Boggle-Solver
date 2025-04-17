@@ -45,6 +45,8 @@ public class BogglePlayer
         }
 
         System.out.println("Num nodes: " + gameTree.size);
+
+        file.close();
     }
 
     // based on the board, find valid words
