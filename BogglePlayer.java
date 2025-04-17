@@ -1,7 +1,7 @@
 /*
 
   Authors (group members): Luis Abraham, Dominick Morales, Justin Bower, and Jacob Woods
-  Email addresses of group members: labrahamesco2024@my.fit.edu, <dominick's address>, <justin's address>, <jacob's address>
+  Email addresses of group members: labrahamesco2024@my.fit.edu, <dominick's address>, <justin's address>, jwoods2022@my.fit.edu
   Group name: The Chantastic Four
 
   Course: CSE 2010
