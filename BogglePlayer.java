@@ -8,20 +8,46 @@
   Section: 2pm Lab (Jacob is in 3:30pm lab)
 
   Description of the overall algorithm and key data structures:
-
-
+  For finding a word we are using a binary search tree but modifying it to work as a terniary search tree without its left node.
+  The reason why is because the wordlist we get is sorted, so we will never have to use the left node in a ternary search tree.
+  With this in mind, the left child of a node will be considered as a "cycle" node where we will replace the current character (i.e CAQ -> CAR)
+  and the right child is considered the nested node where we will use the current parent node, so we move one index down in the string (i.e CA -> CAA)
 */
 
-import java.util.*;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class BogglePlayer
 {
+    private Trie gameTree;
 
     // initialize BogglePlayer with a file of English words
-    public BogglePlayer(String wordFile)
+    public BogglePlayer(String wordFile) throws IOException
     {
+        // initialize tree
+        gameTree = new Trie();
 
+        // Read the dictionary
+        BufferedReader file = new BufferedReader(new FileReader(wordFile));
+        String line;
+        
+        // for each line
+        while ( (line = file.readLine()) != null) {
+          line = line.trim().toLowerCase();
+          Node curNode = null;
+
+          for (int i = 0; i < line.length(); i++) {
+            char cur = line.charAt(i);
+            
+            curNode = gameTree.add((byte) cur, curNode);
+
+            if (i == line.length() - 1)
+              curNode.isWord = true;
+          }
+        }
+
+        System.out.println("Num nodes: " + gameTree.size);
     }
 
     // based on the board, find valid words
@@ -38,12 +64,18 @@ public class BogglePlayer
 
     public Word[] getWords(char[][] board)
     {
-	Word[] myWords = new Word[20];  // assuming 20 words are found
-
-
-
-
-
+      /*
+       * HINT FOR YOU GUYS: you should make a separate recursive function/utilize while loops
+       * Also create a 2D array of booleans where a True will symbolize that a cell is in use
+       * and a False says that a cell is not in use.
+       * 
+       * I think you will really only need the findChild() function in the Trie class, if you need anything else
+       * just DM me and I will make it happen. It should not be that crazy bad to solve (hopefully) and if it is
+       * then also you can DM me and I will help out.
+       *
+       * Check that we have found 20 words, and be chillin and grillin. Good luck guys.
+       */
+      Word[] myWords = new Word[20];  // assuming 20 words are found
 
         return myWords;
     }
