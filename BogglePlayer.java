@@ -8,10 +8,7 @@
   Section: 2pm Lab (Jacob is in 3:30pm lab)
 
   Description of the overall algorithm and key data structures:
-  For finding a word we are using a binary search tree but modifying it to work as a terniary search tree without its left node.
-  The reason why is because the wordlist we get is sorted, so we will never have to use the left node in a ternary search tree.
-  With this in mind, the left child of a node will be considered as a "cycle" node where we will replace the current character (i.e CAQ -> CAR)
-  and the right child is considered the nested node where we will use the current parent node, so we move one index down in the string (i.e CA -> CAA)
+  For the data structure to store the wordlist we are using a Trie with 3 pointers: a child, sibling, and parent. Siblings are used to cycle through letters in current position while going to a parent you are moving back a position and a child up a position. 
 */
 
 import java.io.BufferedReader;
