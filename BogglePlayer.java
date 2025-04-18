@@ -97,7 +97,7 @@ public class BogglePlayer
     public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, ArrayList<Location> path, Node curNode) {
       // add what we added to the current word
       used[curPos.row][curPos.col] = true;
-      path.addLast(curPos);
+      path.add(curPos);
       int addIdx = -1;
       
       // check to see if current node makes a full word
@@ -177,7 +177,7 @@ public class BogglePlayer
       
       // reverse what we added
       used[curPos.row][curPos.col] = false;
-      path.removeLast();
+      path.remove(path.size() - 1);
 
       return words;
     }
@@ -197,14 +197,14 @@ public class BogglePlayer
        */
       Word[] myWords = new Word[20];  // assuming 20 words are found
     
-      /* 
+      
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           System.out.print(board[i][j] + " ");
         }
         System.out.println();
       }
-      */
+      
       
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
