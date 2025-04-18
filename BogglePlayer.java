@@ -38,9 +38,7 @@ public class BogglePlayer
           Node curNode = null;
 
           for (int i = 0; i < line.length(); i++) {
-            char cur = line.charAt(i);
-            
-            curNode = gameTree.add((byte) cur, curNode);
+            curNode = gameTree.add(line.substring(i, i + 1), curNode);
 
             if (i == line.length() - 1 && i >= 2)
               curNode.isWord = true;
@@ -133,8 +131,8 @@ public class BogglePlayer
         String wordFound = "";
         Node current = curNode;
 
-        while (current != null) {
-          wordFound = (char) current.data + wordFound;
+        while (current.data != null) {
+          wordFound = current.data + wordFound;
           current = current.parent;
         }
 
@@ -144,7 +142,7 @@ public class BogglePlayer
         // for some reason it was adding a null byte or something at the beginning of every word???
         // definitely because of all of the byte bs ive been doing
         Word temp = new Word();
-        temp.setWord(wordFound.substring(1));
+        temp.setWord(wordFound);
         
         for (Location cur: path) {
           temp.addLetterRowAndCol(cur.row, cur.col);
@@ -166,7 +164,7 @@ public class BogglePlayer
         //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
         // check to see if current word path exists
-        childNode = gameTree.findChild((byte) board[connection.row][connection.col], curNode);
+        childNode = gameTree.findChildChar(board[connection.row][connection.col], curNode);
         
         // if it does exist, recursive call
         if (childNode != null) {
@@ -197,19 +195,20 @@ public class BogglePlayer
        */
       Word[] myWords = new Word[20];  // assuming 20 words are found
     
-      
+      /* 
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           System.out.print(board[i][j] + " ");
         }
         System.out.println();
       }
+      */
       
       
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           //System.out.println("New set:");
-          myWords = getConnectingWords(board, myWords, new Location(i,j), new ArrayList<Location>(), gameTree.findChild((byte) board[i][j], null));
+          myWords = getConnectingWords(board, myWords, new Location(i,j), new ArrayList<Location>(), gameTree.findChildChar(board[i][j], null));
         }
       }
       

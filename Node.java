@@ -1,5 +1,5 @@
 public class Node {
-    public byte data;
+    public String data;
     
     public Node parent;
     public Node sibling;
@@ -7,7 +7,7 @@ public class Node {
 
     public boolean isWord;
 
-    public Node(byte data) {
+    public Node(String data) {
         this.data = data;
         this.parent = null;
         this.sibling = null;
@@ -15,7 +15,7 @@ public class Node {
         this.isWord = false;
     }
     
-    public Node(byte data, Node parent) {
+    public Node(String data, Node parent) {
         this.data = data;
         this.parent = parent;
         this.sibling = null;
