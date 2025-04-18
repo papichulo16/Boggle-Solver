@@ -14,6 +14,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class BogglePlayer
 {
@@ -93,38 +94,63 @@ public class BogglePlayer
     }
     
     // this will get all words from position starting with curPos
-    public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, Word curWord, Node curNode) {
+    public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, ArrayList<Location> path, Node curNode) {
       // add what we added to the current word
       used[curPos.row][curPos.col] = true;
-      curWord.setWord(curWord.getWord() + board[curPos.row][curPos.col]);
-      System.out.println(curWord.getWord());
-      System.out.println(curNode.isWord);
-      curWord.addLetterRowAndCol(curPos.row, curPos.col);
+      path.addLast(curPos);
+      int addIdx = -1;
       
       // check to see if current node makes a full word
       if (curNode.isWord) {
-        // add to the words array
+        // find an index to add to in the array
         for (int i = 0; i < 20; i++) {
           // if empty spot
           if (words[i] == null) {
-            // add to array and then create a new word
-            curNode.isWord = false;
-
-            System.out.println("[*] Found word: " + curWord.getWord());
-            
-            // create a copy word of current path and add that to array
-            Word temp = new Word(curWord.getWord());
-            
-            for (int j = 0; j < temp.getWord().length(); j++)
-              temp.addLetterRowAndCol(temp.getLetterRow(j), temp.getLetterCol(j));
-
-            words[i] = temp;
-            
-            curWord = temp;
+            addIdx = i;
 
             break;
           }
         }
+        
+        // in case array is full, we must see if this new string is better than at least one item in the array
+        if (addIdx == -1) {
+          int worstIdx = 0;
+
+          for (int i = 1; i < 20; i++) {
+            if (words[i].getWord().length() < words[worstIdx].getWord().length())
+              worstIdx = i;
+          }
+          
+          if (words[worstIdx].getWord().length() < path.size()) 
+            addIdx = worstIdx;
+        }
+      }
+        
+      // if we found an index to add to
+      if (addIdx > -1) {
+        // add to array and then create a new word
+        curNode.isWord = false;
+        String wordFound = "";
+        Node current = curNode;
+
+        while (current != null) {
+          wordFound = (char) current.data + wordFound;
+          current = current.parent;
+        }
+
+        //System.out.println("[*] Found word: " + wordFound);
+        
+        // create a copy word of current path and add that to array
+        // for some reason it was adding a null byte or something at the beginning of every word???
+        // definitely because of all of the byte bs ive been doing
+        Word temp = new Word();
+        temp.setWord(wordFound.substring(1));
+        
+        for (Location cur: path) {
+          temp.addLetterRowAndCol(cur.row, cur.col);
+        }
+        
+        words[addIdx] = temp;
       }
 
       // this is the part where we look through child nodes to recursively call
@@ -137,25 +163,22 @@ public class BogglePlayer
         if (connection == null)
           break;
         
-        System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
+        //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
         // check to see if current word path exists
         childNode = gameTree.findChild((byte) board[connection.row][connection.col], curNode);
         
         // if it does exist, recursive call
         if (childNode != null) {
-          System.out.println("Child node: " + (char) childNode.data);
-          words = getConnectingWords(board, words, connection, curWord, childNode);
+          //System.out.println("Child node: " + (char) childNode.data);
+          words = getConnectingWords(board, words, connection, path, childNode);
         }
       }
       
       // reverse what we added
       used[curPos.row][curPos.col] = false;
-      curWord.setWord(curWord.getWord().substring(0, curWord.getWord().length() - 1));
-      Location removed = curWord.removePathTail();
-      
-      System.out.println("Reduced string: " + curWord.getWord() + " (" + removed.row + ", " + removed.col + ")");
-      
+      path.removeLast();
+
       return words;
     }
 
@@ -173,29 +196,36 @@ public class BogglePlayer
        * Check that we have found 20 words, and be chillin and grillin. Good luck guys.
        */
       Word[] myWords = new Word[20];  // assuming 20 words are found
-      System.out.println(gameTree.findChild((byte) board[0][0], null));
     
+      /* 
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           System.out.print(board[i][j] + " ");
         }
         System.out.println();
       }
+      */
       
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-          System.out.println("New set:");
-          myWords = getConnectingWords(board, myWords, new Location(i,j), new Word(), gameTree.findChild((byte) board[i][j], null));
+          //System.out.println("New set:");
+          myWords = getConnectingWords(board, myWords, new Location(i,j), new ArrayList<Location>(), gameTree.findChild((byte) board[i][j], null));
         }
       }
       
-      Node test = gameTree.findChild((byte) 'E', null);
-      System.out.println(test);
-      System.out.println((char) gameTree.findChild((byte) 'W', test).child.sibling.data);
-      test = gameTree.findChild((byte) 'W', test);
-      System.out.println((char) test.data);
-      System.out.println(gameTree.findChild((byte) 'W', test));
+      /* 
+      for (int i = 0; i < 20; i++) {
+        System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() + "): ");
+        
+        for (int j = 0; j < myWords[i].getPathLength(); j++) {
+          System.out.print("(" + myWords[i].getLetterRow(j) + ", " + myWords[i].getLetterCol(j) + "), ");
+        }
 
+        System.out.println();
+        
+      }
+      */
+      
       return myWords;
     }
 

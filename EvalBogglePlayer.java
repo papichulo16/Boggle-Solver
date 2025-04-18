@@ -229,6 +229,8 @@ public class EvalBogglePlayer {
 		points--;
 	    }
         }
+        
+        System.out.println(points);
 
 	if (points < 0)
 	    points = 0;
