@@ -62,6 +62,10 @@ public class Word
 	path = new ArrayList<Location>(word.length()); 
     }
 
+    public Location removePathTail() {
+        return path.removeLast();
+    }
+    
     /**
      * set the word field (the path field is not modified or checked)
      * @param aWord the corresponding word

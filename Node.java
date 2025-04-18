@@ -20,6 +20,6 @@ public class Node {
         this.parent = parent;
         this.sibling = null;
         this.child = null;
+        this.isWord = false;
     }
-    
 }

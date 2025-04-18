@@ -9,8 +9,15 @@ public class Trie {
     
     // this function returns the child node with data equivalent to target from a given parent
     // returns null if no child is found
+    // if parentNode is null, then we are looking at the first character of a string
     public Node findChild(byte target, Node parentNode) {
-        Node current = parentNode.child;
+        Node current;
+
+        if (parentNode != null)
+            current = parentNode.child;
+        else {
+            current = this.root.child;
+        }
         
         while (current != null) {
             if (current.data == target)
@@ -30,10 +37,8 @@ public class Trie {
     public Node add(byte newChar, Node parentNode) {
         // in case there is no root
         if (this.root == null) {
-            this.root = new Node(newChar);
+            this.root = new Node((byte) 0);
             this.size++;
-            
-            return this.root;
         }
 
         // in case we are on letter one
@@ -48,8 +53,8 @@ public class Trie {
         if (current == null) {
             ret = new Node(newChar, parentNode);
             this.size++;
-            
             parentNode.child = ret;
+
             return ret;
         }
         
