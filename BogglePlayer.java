@@ -91,75 +91,8 @@ public class BogglePlayer
       
       return ret;
     }
-    
-    // this will get all words from position starting with curPos
-    public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, Word curWord, Node curNode) {
-      // add what we added to the current word
-      used[curPos.row][curPos.col] = true;
-      curWord.setWord(curWord.getWord() + board[curPos.row][curPos.col]);
-      System.out.println(curWord.getWord());
-      System.out.println(curNode.isWord);
-      curWord.addLetterRowAndCol(curPos.row, curPos.col);
-      
-      // check to see if current node makes a full word
-      if (curNode.isWord) {
-        // add to the words array
-        for (int i = 0; i < 20; i++) {
-          // if empty spot
-          if (words[i] == null) {
-            // add to array and then create a new word
-            curNode.isWord = false;
 
-            System.out.println("[*] Found word: " + curWord.getWord());
-            
-            // create a copy word of current path and add that to array
-            Word temp = new Word(curWord.getWord());
-            
-            for (int j = 0; j < temp.getWord().length(); j++)
-              temp.addLetterRowAndCol(temp.getLetterRow(j), temp.getLetterCol(j));
-
-            words[i] = temp;
-            
-            curWord = temp;
-
-            break;
-          }
-        }
-      }
-
-      // this is the part where we look through child nodes to recursively call
-      Location[] allPossibleLocations = getUsableLocations(curPos);
-      Node childNode;
-
-      // iterate through each location
-      for (Location connection: allPossibleLocations) {
-        // in case we are done
-        if (connection == null)
-          break;
-        
-        System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
-
-        // check to see if current word path exists
-        childNode = gameTree.findChild((byte) board[connection.row][connection.col], curNode);
-        
-        // if it does exist, recursive call
-        if (childNode != null) {
-          System.out.println("Child node: " + (char) childNode.data);
-          words = getConnectingWords(board, words, connection, curWord, childNode);
-        }
-      }
-      
-      // reverse what we added
-      used[curPos.row][curPos.col] = false;
-      curWord.setWord(curWord.getWord().substring(0, curWord.getWord().length() - 1));
-      Location removed = curWord.removePathTail();
-      
-      System.out.println("Reduced string: " + curWord.getWord() + " (" + removed.row + ", " + removed.col + ")");
-      
-      return words;
-    }
-
-    public Word[] getWords(char[][] board)
+       public Word[] getWords(char[][] board)
     {
       /*
        * HINT FOR YOU GUYS: you should make a separate recursive function/utilize while loops
@@ -174,29 +107,8 @@ public class BogglePlayer
        */
       Word[] myWords = new Word[20];  // assuming 20 words are found
       System.out.println(gameTree.findChild((byte) board[0][0], null));
-    
-      for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-          System.out.print(board[i][j] + " ");
-        }
-        System.out.println();
-      }
-      
-      for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-          System.out.println("New set:");
-          myWords = getConnectingWords(board, myWords, new Location(i,j), new Word(), gameTree.findChild((byte) board[i][j], null));
-        }
-      }
-      
-      Node test = gameTree.findChild((byte) 'E', null);
-      System.out.println(test);
-      System.out.println((char) gameTree.findChild((byte) 'W', test).child.sibling.data);
-      test = gameTree.findChild((byte) 'W', test);
-      System.out.println((char) test.data);
-      System.out.println(gameTree.findChild((byte) 'W', test));
 
-      return myWords;
+       return myWords;
     }
 
 }
