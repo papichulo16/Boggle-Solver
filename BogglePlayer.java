@@ -133,7 +133,7 @@ public class BogglePlayer
         String wordFound = "";
         Node current = curNode;
 
-        while (current != null) {
+        while (current.data != 0) {
           wordFound = (char) current.data + wordFound;
           current = current.parent;
         }
@@ -141,10 +141,8 @@ public class BogglePlayer
         //System.out.println("[*] Found word: " + wordFound);
         
         // create a copy word of current path and add that to array
-        // for some reason it was adding a null byte or something at the beginning of every word???
-        // definitely because of all of the byte bs ive been doing
         Word temp = new Word();
-        temp.setWord(wordFound.substring(1));
+        temp.setWord(wordFound);
         
         for (Location cur: path) {
           temp.addLetterRowAndCol(cur.row, cur.col);
