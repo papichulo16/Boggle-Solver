@@ -138,12 +138,16 @@ public class EvalBogglePlayer {
             System.exit(-1);
         }
 
+
        if (totalElapsedTime <= 0) // too small to measure, unlikely
 	   {
 	       System.err.println("Zero time usage was reported; please rerun");
 	       System.exit(-1);
 	       //totalElapsedTime = 1.0 / 1.0E9;
 	   }
+
+
+
        if (memory <= 0) // too small to measure, highly unlikely
 	   {
 	       System.err.println("Zero memory usage was reported; please rerun");
@@ -173,6 +177,23 @@ public class EvalBogglePlayer {
         System.out.printf("Overall Score: %.4f\n", (totalPoints * totalPoints) / Math.sqrt(totalElapsedTime * memory));
 
         BogglePlayer player2 = player;  // keep player used to avoid garbage collection of player
+
+        //print all the words found
+        System.out.println("Words found:");
+        for (int i = 0; i < words.length; i++) {
+            if (words[i] != null) {
+                System.out.println(words[i].getWord());
+            }
+        }
+
+        //print the board
+        System.out.println("Board:");
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
 
     /**
