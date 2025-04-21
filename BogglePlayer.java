@@ -14,15 +14,17 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
+import java.util.*;
 public class BogglePlayer
 {
     private Trie gameTree;
     private boolean[][] used;
+    public int count = 0;
+   
 
     // initialize BogglePlayer with a file of English words
     public BogglePlayer(String wordFile) throws IOException
-    {
+    {   
         // initialize tree
         gameTree = new Trie();
         used = new boolean[4][4];
@@ -64,9 +66,11 @@ public class BogglePlayer
     //     Location.java for details of the Location class
     
     // gets the current usable locations while using the used[][] as context 
-    public Location[] getUsableLocations(Location cur) {
+
+    
+    public ArrayList getUsableLocations(Location cur) {
       int idx = 0;
-      Location[] ret = new Location[8];
+      ArrayList<Location> ret = new ArrayList<>();
 
       // iterate through each possible offset
       for (int i = 1; i >= -1; i--) {
@@ -84,31 +88,84 @@ public class BogglePlayer
             continue;
           
 
-          ret[idx] = new Location(cur.row + i, cur.col + j);
+          ret.add(new Location(cur.row + i, cur.col + j));
           idx++;
         }
       }
       
       return ret;
     }
-
+    
+    
+    
        public Word[] getWords(char[][] board)
     {
-      /*
-       * HINT FOR YOU GUYS: you should make a separate recursive function/utilize while loops
-       * Also create a 2D array of booleans where a True will symbolize that a cell is in use
-       * and a False says that a cell is not in use.
-       * 
-       * I think you will really only need the findChild() function in the Trie class, if you need anything else
-       * just DM me and I will make it happen. It should not be that crazy bad to solve (hopefully) and if it is
-       * then also you can DM me and I will help out.
-       *
-       * Check that we have found 20 words, and be chillin and grillin. Good luck guys.
-       */
-      Word[] myWords = new Word[20];  // assuming 20 words are found
-      System.out.println(gameTree.findChild((byte) board[0][0], null));
-
-       return myWords;
+      StringBuilder path = new StringBuilder();
+      ArrayList<Location> pathL = new ArrayList<>();
+      Node tempnode;
+      int y = 0;
+      Word[] myWords = new Word[20];// assuming 20 words are found
+        
+      PriorityQueue<Word> results = new PriorityQueue<>(20,Comparator.comparingInt(w -> w.getWord().length()));
+      
+      for (int i=0;i<4;i++) {
+          for (int j=0;j<4;j++) {
+                  tempnode = gameTree.findChild((byte)board[i][j],null);
+                  used[i][j] = true;
+                  path.append(board[i][j]);
+                  Location loc = new Location(i,j);
+                  pathL.add(loc);
+                  findWord(tempnode,getUsableLocations(loc),results,board,path,pathL);
+                  path.setLength(path.length()-1);
+                  pathL.clear();
+                  used[i][j] = false;
+          }
+      }
+      count = 0;
+       return results.toArray(new Word[0]);
     }
+    
+    
+    public void findWord(Node currentNode, ArrayList<Location> possibleLocations, PriorityQueue<Word> topWords,
+                     char[][] board, StringBuilder path, ArrayList<Location> pathLocations) {
+    for (Location loc : possibleLocations) {
+        if (loc == null || used[loc.row][loc.col]) continue;
 
+        char c = board[loc.row][loc.col];
+        Node nextNode = gameTree.findChild((byte) c, currentNode);
+
+        if (nextNode != null) {
+            // Choose
+            used[loc.row][loc.col] = true;
+            path.append(c);
+            pathLocations.add(loc);
+
+            if (nextNode.isWord && path.length() >= 3) {
+                nextNode.isWord = false;
+
+                Word newWord = new Word(path.toString());
+                newWord.setPath(new ArrayList<>(pathLocations));
+
+                // Add to topWords only if it's longer than the shortest
+                if (topWords.size() < 20) {
+                    topWords.offer(newWord);
+                } else if (newWord.word.length() > topWords.peek().word.length()) {
+                    topWords.poll(); // remove shortest
+                    topWords.offer(newWord);
+                }
+            }
+
+            // Explore further
+            findWord(nextNode,getUsableLocations(loc), topWords, board, path, pathLocations);
+
+            // Un-choose (backtrack)
+            used[loc.row][loc.col] = false;
+            pathLocations.remove(pathLocations.size() - 1);
+            path.setLength(path.length() - 1);
+        }
+    }
+    }
 }
+
+
+
