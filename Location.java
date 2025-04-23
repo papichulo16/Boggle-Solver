@@ -16,8 +16,8 @@ public class Location
      */
     public Location(int aRow, int aCol)
     {
-	row = aRow;
-	col = aCol;
+        row = aRow;
+        col = aCol;
     }
 
     /**
@@ -25,7 +25,7 @@ public class Location
      */
     public Location()
     {
-	row = 0;
-	col = 0;
+        row = 0;
+        col = 0;
     }
 }

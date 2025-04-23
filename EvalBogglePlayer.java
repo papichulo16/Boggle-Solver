@@ -30,7 +30,7 @@ import java.util.Random;
   a.  totalPoints: total points of found words
   b.  speed: time in second for finding words
   c.  space consumption: memory consumption
-  d.  overall score--(totalPoints^2)/sqrt(time * memory)  
+  d.  overall score--(totalPoints^2)/sqrt(time * memory)
 
 
   --------Pseudocode for evaluating BogglePlayer---------------
@@ -87,7 +87,7 @@ public class EvalBogglePlayer {
         Runtime runtime = Runtime.getRuntime();
         runtime.gc();
         System.out.println("memory in bytes (not part of score): " +
-			   df.format((double)peakMemoryUsage()));
+                           df.format((double)peakMemoryUsage()));
 
 
         //Default seed if second argument is not passed
@@ -106,21 +106,21 @@ public class EvalBogglePlayer {
         int length = boggleDices.size();
 
         //Create random board
-	//make a copy of the board for BogglePlayer
-	//so BogglePlayer can't change the provided board
+        //make a copy of the board for BogglePlayer
+        //so BogglePlayer can't change the provided board
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 int diceIndex = rnd.nextInt(length);
                 String dice = boggleDices.get(diceIndex);
                 board[i][j] = dice.charAt(rnd.nextInt(6));
-		boardCopy[i][j] = board[i][j];
+                boardCopy[i][j] = board[i][j];
                 boggleDices.set(diceIndex, boggleDices.get(length - 1));
                 boggleDices.set(length - 1, dice);
                 length--;
             }
         }
 
-	//Calculate the time taken to find the words on the board
+        //Calculate the time taken to find the words on the board
         long startTime = bean.getCurrentThreadCpuTime();
         //Play the game of Boggle and find the words
         Word[] words = player.getWords(boardCopy);
@@ -138,24 +138,20 @@ public class EvalBogglePlayer {
             System.exit(-1);
         }
 
-
        if (totalElapsedTime <= 0) // too small to measure, unlikely
-	   {
-	       System.err.println("Zero time usage was reported; please rerun");
-	       System.exit(-1);
-	       //totalElapsedTime = 1.0 / 1.0E9;
-	   }
-
-
-
-       if (memory <= 0) // too small to measure, highly unlikely
-	   {
-	       System.err.println("Zero memory usage was reported; please rerun");
+           {
+               System.err.println("Zero time usage was reported; please rerun");
                System.exit(-1);
-	       //memory = 1;
-	   }
+               //totalElapsedTime = 1.0 / 1.0E9;
+           }
+       if (memory <= 0) // too small to measure, highly unlikely
+           {
+               System.err.println("Zero memory usage was reported; please rerun");
+               System.exit(-1);
+               //memory = 1;
+           }
 
-       
+
         //Read the dictionary
         BufferedReader file = new BufferedReader(new FileReader(args[0]));
         String line;
@@ -171,29 +167,12 @@ public class EvalBogglePlayer {
         //DecimalFormat df = new DecimalFormat("0.####E0"); // moved to near initialization
         System.out.println("Time in seconds: " + df.format(totalElapsedTime));
         System.out.println("Used memory in bytes: " +
-			   df.format((double)memory));
+                           df.format((double)memory));
 
         //Overall Score
         System.out.printf("Overall Score: %.4f\n", (totalPoints * totalPoints) / Math.sqrt(totalElapsedTime * memory));
 
         BogglePlayer player2 = player;  // keep player used to avoid garbage collection of player
-
-        //print all the words found
-        System.out.println("Words found:");
-        for (int i = 0; i < words.length; i++) {
-            if (words[i] != null) {
-                System.out.println(words[i].getWord());
-            }
-        }
-
-        //print the board
-        System.out.println("Board:");
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
     }
 
     /**
@@ -206,24 +185,24 @@ public class EvalBogglePlayer {
     private static int calculatePoints(Word[] words, char[][] board) {
         int points = 0;
 
-	if (words == null)
-	    {
-		System.out.println("Your word list is null");
-		return(0);
-	    }
-	    
+        if (words == null)
+            {
+                System.out.println("Your word list is null");
+                return(0);
+            }
 
-	int wordListLen = words.length;	
+
+        int wordListLen = words.length;
         if (wordListLen < 0)
-	  {
-	      System.out.printf("Your word list has negative length: %d\n", wordListLen);
-	    return 0;  
-	  }
-	else if (wordListLen > 20) 
-	  {
-	    points -= (wordListLen - 20);  //Penalty if more than 20 words were returned
-	    wordListLen = 20;              // only the first 20 are counted
-	  }
+          {
+              System.out.printf("Your word list has negative length: %d\n", wordListLen);
+            return 0;
+          }
+        else if (wordListLen > 20)
+          {
+            points -= (wordListLen - 20);  //Penalty if more than 20 words were returned
+            wordListLen = 20;              // only the first 20 are counted
+          }
 
 
         //Calculate points for the first 20 words, or fewer
@@ -235,7 +214,7 @@ public class EvalBogglePlayer {
                 for (int i = 0; i < index; i++) {
                     if (w.getWord().equals(words[i].getWord())) {
                         duplicate = true;
-			break;
+                        break;
                     }
                 }
 
@@ -246,13 +225,15 @@ public class EvalBogglePlayer {
                     points += checkForWordValidity(w, board);
                 }
             }
-	    else { // word is null
-		points--;
-	    }
+            else { // word is null
+                points--;
+            }
         }
 
-	if (points < 0)
-	    points = 0;
+        System.out.println(points);
+
+        if (points < 0)
+            points = 0;
 
         return points;
     }
@@ -282,8 +263,8 @@ public class EvalBogglePlayer {
         if (length < 3)
             return -1;
         if (length > 16)
-	    return -((length - 2) * (length - 2));
-	
+            return -((length - 2) * (length - 2));
+
         //Check if the letters of the word are adjacent on the board
         for (int i = 1; i < word.getPathLength(); i++) {
             if (squareDistance(word.getLetterLocation(i - 1), word.getLetterLocation(i)) > 2) {
@@ -332,13 +313,13 @@ public class EvalBogglePlayer {
      *
      * adapted from
 
-     * https://stackoverflow.com/questions/34624892/how-to-measure-peak-heap-memory-usage-in-java 
+     * https://stackoverflow.com/questions/34624892/how-to-measure-peak-heap-memory-usage-in-java
 
      *  https://docs.oracle.com/javase/8/docs/api/java/lang/management/MemoryType.html
      *  only two memory types: HEAP and NON_HEAP (including JVM)
      *  measuring only HEAP
      */
-    private static long peakMemoryUsage() 
+    private static long peakMemoryUsage()
     {
 
     List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();

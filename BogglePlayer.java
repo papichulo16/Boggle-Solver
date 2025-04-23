@@ -1,15 +1,41 @@
+/*
+
+  Authors (group members): Luis Abraham, Dominick Morales, Justin Bower, and Jacob Woods
+  Email addresses of group members: labrahamesco2024@my.fit.edu, <dominick's address>, <justin's address>, <jacob's address>
+  Group name: The Chantastic Four
+
+  Course: CSE 2010
+  Section: 2pm Lab (Jacob is in 3:30pm lab)
+
+  Description of the overall algorithm and key data structures:
+  For the data structure to store the wordlist we are using a Trie with 3 pointers: a child, sibling, and parent. Siblings are used to cycle through letters in current position while going to a parent you are moving back a position and a child up a position.
+*/
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 
-public class BogglePlayer {
+public class BogglePlayer
+{
     private Trie gameTree;
     private boolean[][] used;
 
-    // initialize BogglePlayer with a file of English words
-    public BogglePlayer(String wordFile) throws IOException {
+    //make it so we dont end up making so many location objects
+    //this appears to actually have improved score so thats awesome
+    private static final Location[][] pool = new Location[4][4];
+    static {
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                pool[r][c] = new Location(r, c);
+            }
+        }
+    }
 
+
+    // initialize BogglePlayer with a file of English words
+    public BogglePlayer(String wordFile) throws IOException
+    {
         // initialize tree
         gameTree = new Trie();
         used = new boolean[4][4];
@@ -18,149 +44,214 @@ public class BogglePlayer {
         BufferedReader file = new BufferedReader(new FileReader(wordFile));
         String line;
 
+        // for each line
+        while ( (line = file.readLine()) != null) {
+          line = line.trim().toUpperCase();
+          Node curNode = null;
 
-        // for each line we add to the trie
-        while ((line = file.readLine()) != null) {
-            line = line.trim().toUpperCase();
-            Node curNode = null;
+          for (int i = 0; i < line.length(); i++) {
+            char cur = line.charAt(i);
 
-            for (int i = 0; i < line.length(); i++) {
-                char cur = line.charAt(i);
-                curNode = gameTree.add((byte) cur, curNode);
-                if (i == line.length() - 1 && i >= 2)
-                    curNode.isWord = true;
+            curNode = gameTree.add((byte) cur, curNode);
 
-            }
+            if (i == line.length() - 1 && i >= 2)
+              curNode.isWord = true;
+          }
         }
+
         System.out.println("Num nodes: " + gameTree.size);
 
         file.close();
     }
 
+    // based on the board, find valid words
+    //
+    // board: 4x4 board, each element is a letter, 'Q' represents "QU",
+    //    first dimension is row, second dimension is column
+    //    ie, board[row][col]
+    //
+    // Return at most 20 valid words in UPPERCASE and
+    //    their paths of locations on the board in myWords;
+    //
+    // See Word.java for details of the Word class and
+    //     Location.java for details of the Location class
 
-// based on the board, find valid words
-//
-// board: 4x4 board, each element is a letter, 'Q' represents "QU",
-// first dimension is row, second dimension is column
-// ie, board[row][col]
-//
-// Return at most 20 valid words in UPPERCASE and
-// their paths of locations on the board in myWords;
-//
-// See Word.java for details of the Word class and
-// Location.java for details of the Location class
-// gets the current usable locations while using the used[][] as context
-
+    // gets the current usable locations while using the used[][] as context
     public Location[] getUsableLocations(Location cur) {
-        int idx = 0;
-        Location[] ret = new Location[8];
+      int idx = 0;
+      Location[] ret = new Location[8];
 
-        // iterate through each possible offset
-        for (int i = 1; i >= -1; i--) {
-            for (int j = 1; j >= -1; j--) {
-                // in case we are looking at the current location
-                if (i == 0 && j == 0)
-                    continue;
-                // in case we are out of bounds
-                if (cur.row + i > 3 || cur.col + j > 3 || cur.row + i < 0 || cur.col + j < 0)
-                    continue;
-                // in case the spot is already in use
-                if (used[cur.row + i][cur.col + j])
-                    continue;
-                ret[idx] = new Location(cur.row + i, cur.col + j);
-                idx++;
-            }
+      // iterate through each possible offset
+      for (int i = 1; i >= -1; i--) {
+        for (int j = 1; j >= -1; j--) {
+          // in case we are looking at the current location
+          if (i == 0 && j == 0)
+            continue;
+
+          //location pool indexes
+          int xx = cur.row + i;
+          int yy = cur.col + j;
+
+          // in case we are out of bounds
+          if (xx > 3 || yy > 3 || xx < 0 || yy < 0)
+            continue;
+
+          // in case the spot is already in use
+          if (used[xx][yy])
+            continue;
+
+
+          ret[idx] = pool[xx][yy];
+          idx++;
         }
-        return ret;
+      }
+
+      return ret;
     }
 
+    // this will get all words from position starting with curPos
+    public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, ArrayList<Location> path, Node curNode, StringBuilder pref) {
+      // add what we added to the current word
+      used[curPos.row][curPos.col] = true;
+      path.add(curPos);
+      int addIdx = -1;
 
-    //depth first search
-    // abysmal?
-    public void dfs(int row, int col, Node par, String curWord, ArrayList<Location> curPath, PriorityQueue<Word> wordQueue, char[][] myboard) {
-        char cur = myboard[row][col];
-        Node curNode;
-        String newWord;
-        ArrayList<Location> newPath = new ArrayList<>(curPath);
-        newPath.add(new Location(row, col));
+      // check to see if current node makes a full word
+      if (curNode.isWord) {
+        // find an index to add to in the array
+        for (int i = 0; i < 20; i++) {
+          // if empty spot
+          if (words[i] == null) {
+            addIdx = i;
 
-        if (cur == 'Q') {
-            // 1) find the Q‑node
-            Node qNode = gameTree.findChild((byte) 'Q', par);
-            if (qNode == null) return; // stop if there is no Q‑child
-            // 2) under that Q‑node, find the U‑child
-            Node uNode = gameTree.findChild((byte) 'U', qNode);
-            if (uNode == null) return; // stop if no U follows Q
-            // 3) advance into the U‑node
-            curNode = uNode;
-            newWord = curWord + "QU";
-        } else {
-            curNode = gameTree.findChild((byte) cur, par); //find what we are looking for
-            if (curNode == null) return;
-            newWord = curWord + cur;
+            break;
+          }
         }
 
-        if (curNode.isWord && newWord.length() >= 3) { //we found a word that is >= 3 size
-            Word newFound = new Word(newWord);
-            newFound.setPath(newPath);
-            wordQueue.offer(newFound);
+        // in case array is full, we must see if this new string is better than at least one item in the array
+        if (addIdx == -1) {
+          int worstIdx = 0;
+
+          for (int i = 1; i < 20; i++) {
+            if (words[i].getWord().length() < words[worstIdx].getWord().length())
+              worstIdx = i;
+          }
+
+          if (words[worstIdx].getWord().length() < path.size())
+            addIdx = worstIdx;
+        }
+      }
+
+      // if we found an index to add to
+      if (addIdx > -1) {
+        // add to array and then create a new word
+        curNode.isWord = false;
+        //mfw we have to make a string object
+        //its better though since we use a string builder
+        String wordFound = pref.toString();
+
+        //System.out.println("[*] Found word: " + wordFound);
+
+        // create a copy word of current path and add that to array
+        Word temp = new Word();
+        temp.setWord(wordFound);
+
+        for (Location cur: path) {
+          temp.addLetterRowAndCol(cur.row, cur.col);
         }
 
+        words[addIdx] = temp;
+      }
 
-        Location[] usableLocations = getUsableLocations(new Location(row, col));
-        for (Location loc : usableLocations) {
-            if (loc != null && !used[loc.row][loc.col]) {
-                used[loc.row][loc.col] = true; //this is important for pathfinding
-                dfs(loc.row, loc.col, curNode, newWord, newPath, wordQueue, myboard); //recursively call dfs to find more words
-                used[loc.row][loc.col] = false; //unmark once we are done
+      // this is the part where we look through child nodes to recursively call
+      Location[] allPossibleLocations = getUsableLocations(curPos);
 
-            }
+      // iterate through each location
+      for (Location connection: allPossibleLocations) {
+        // in case we are done
+        if (connection == null)
+          break;
 
+        byte letter = (byte) board[connection.row][connection.col];
+
+        //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
+
+        // check to see if current word path exists
+        Node childNode = gameTree.findChild(letter, curNode);
+
+        // if it does exist, recursive call
+        if (childNode != null) {
+
+          //System.out.println("Child node: " + (char) childNode.data);
+          pref.append((char)letter);
+
+          words = getConnectingWords(board, words, connection, path, childNode, pref);
+          pref.setLength(pref.length()-1);
         }
+      }
 
+      // reverse what we added
+      used[curPos.row][curPos.col] = false;
+      path.remove(path.size() - 1);
+
+      return words;
     }
 
+    public Word[] getWords(char[][] board)
+    {
+      /*
+       * HINT FOR YOU GUYS: you should make a separate recursive function/utilize while loops
+       * Also create a 2D array of booleans where a True will symbolize that a cell is in use
+       * and a False says that a cell is not in use.
+       *
+       * I think you will really only need the findChild() function in the Trie class, if you need anything else
+       * just DM me and I will make it happen. It should not be that crazy bad to solve (hopefully) and if it is
+       * then also you can DM me and I will help out.
+       *
+       * Check that we have found 20 words, and be chillin and grillin. Good luck guys.
+       */
+      Word[] myWords = new Word[20];  // assuming 20 words are found
 
-    public Word[] getWords(char[][] board) {
-        //i mutilated this function
-        PriorityQueue<Word> toBeDumped = new PriorityQueue<>((a, b) -> { //honestly not sure if this is the fastest way to do this
-            int wordlen = Integer.compare(b.getWord().length(), a.getWord().length()); //need a comparator to sort the words
-            if (wordlen != 0) return wordlen;
-            return a.getWord().compareTo(b.getWord());
-        });
+
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          System.out.print(board[i][j] + " ");
+        }
+        System.out.println();
+      }
 
 
-        // for each letter on the board, we will start a dfs
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 4; col++) {
-                for (int i = 0; i < 4; i++) {
-                    Arrays.fill(used[i], false); //reset the used array so we can take a look for each letter
-                }
-                used[row][col] = true;// mark the starting letter as used
-                dfs(row, col, gameTree.root, "", new ArrayList<>(), toBeDumped, board); //dfs time
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          //System.out.println("New set:");
 
-            }
+          //killed parent nodes :steamhappy:
+          Node shart = gameTree.findChild((byte)board[i][j], null);
+          if(shart != null){
+            //stringbuilder is veri good to avoid making too many strings since strings are immutable
+            StringBuilder pref = new StringBuilder().append(board[i][j]);
+            Location toPass= pool[i][j];
+            myWords = getConnectingWords(board, myWords, new Location(i,j), new ArrayList<Location>(), shart, pref);
+          }
+        }
+      }
 
+
+
+      /*
+      for (int i = 0; i < 20; i++) {
+        System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() + "): ");
+
+        for (int j = 0; j < myWords[i].getPathLength(); j++) {
+          System.out.print("(" + myWords[i].getLetterRow(j) + ", " + myWords[i].getLetterCol(j) + "), ");
         }
 
-        //dump the words into an array, avoid already seen words
-        //I also dont know whether duplicates actually occur but this is one way to prevent it
-        HashMap<String, Boolean> seen = new HashMap<>();
-        ArrayList<Word> resultWords = new ArrayList<>();
+        System.out.println();
 
-        // this gets us the best words since its a priority queue
-        while (!toBeDumped.isEmpty() && resultWords.size() < 20) {
-            Word word = toBeDumped.poll();
-            if (seen.put(word.getWord(), Boolean.TRUE) == null) {
-                resultWords.add(word);
-            }
-        }
+      }
+      */
 
-
-        //are you supposed to return it like this?
-        return resultWords.toArray(new Word[0]);
-
+      return myWords;
     }
-
 
 }
