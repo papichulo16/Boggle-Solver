@@ -1,5 +1,4 @@
 /*
-
   Authors (group members): Luis Abraham, Dominick Morales, Justin Bower, and Jacob Woods
   Email addresses of group members: labrahamesco2024@my.fit.edu, <dominick's address>, <justin's address>, <jacob's address>
   Group name: The Chantastic Four
@@ -8,7 +7,10 @@
   Section: 2pm Lab (Jacob is in 3:30pm lab)
 
   Description of the overall algorithm and key data structures:
-  For the data structure to store the wordlist we are using a Trie with 3 pointers: a child, sibling, and parent. Siblings are used to cycle through letters in current position while going to a parent you are moving back a position and a child up a position.
+  For the data structure to store the wordlist we are using a Trie with 3 pointers: a child, sibling, and parent. 
+  Siblings are used to cycle through letters in current position while going to a parent you are moving back a position and a child up a position.
+  
+  Our findWords function is recursive and looks through each cell and tries to find as many words as possible, then uses the best words.
 */
 
 import java.io.BufferedReader;
@@ -18,11 +20,12 @@ import java.util.ArrayList;
 
 public class BogglePlayer
 {
+    // variables we will need for later on
     private Trie gameTree;
     private boolean[][] used;
 
-    //make it so we dont end up making so many location objects
-    //this appears to actually have improved score so thats awesome
+    // make it so we dont end up making so many location objects
+    // this appears to actually have improved score so thats awesome
     private static final Location[][] pool = new Location[4][4];
     static {
         for (int r = 0; r < 4; r++) {
@@ -31,7 +34,6 @@ public class BogglePlayer
             }
         }
     }
-
 
     // initialize BogglePlayer with a file of English words
     public BogglePlayer(String wordFile) throws IOException
@@ -44,7 +46,7 @@ public class BogglePlayer
         BufferedReader file = new BufferedReader(new FileReader(wordFile));
         String line;
 
-        // for each line
+        // for each line, make sure we got a trie going
         while ( (line = file.readLine()) != null) {
           line = line.trim().toUpperCase();
           Node curNode = null;
@@ -110,6 +112,7 @@ public class BogglePlayer
     }
 
     // this will get all words from position starting with curPos
+    // this is also recursive
     public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, ArrayList<Location> path, Node curNode, StringBuilder pref) {
       // add what we added to the current word
       used[curPos.row][curPos.col] = true;
@@ -146,10 +149,10 @@ public class BogglePlayer
       if (addIdx > -1) {
         // add to array and then create a new word
         curNode.isWord = false;
-        //mfw we have to make a string object
-        //its better though since we use a string builder
-        String wordFound = pref.toString();
 
+        // mfw we have to make a string object
+        // its better though since we use a string builder
+        String wordFound = pref.toString();
         //System.out.println("[*] Found word: " + wordFound);
 
         // create a copy word of current path and add that to array
@@ -172,20 +175,22 @@ public class BogglePlayer
         if (connection == null)
           break;
 
-        byte letter = (byte) board[connection.row][connection.col];
-
         //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
         // check to see if current word path exists
+        byte letter = (byte) board[connection.row][connection.col];
         Node childNode = gameTree.findChild(letter, curNode);
 
         // if it does exist, recursive call
         if (childNode != null) {
-
           //System.out.println("Child node: " + (char) childNode.data);
+          // add the letter we are using
           pref.append((char)letter);
 
+          // recursive call
           words = getConnectingWords(board, words, connection, path, childNode, pref);
+          
+          // make sure we are overwriting the letter we just added since we are done
           pref.setLength(pref.length()-1);
         }
       }
@@ -199,44 +204,36 @@ public class BogglePlayer
 
     public Word[] getWords(char[][] board)
     {
-      /*
-       * HINT FOR YOU GUYS: you should make a separate recursive function/utilize while loops
-       * Also create a 2D array of booleans where a True will symbolize that a cell is in use
-       * and a False says that a cell is not in use.
-       *
-       * I think you will really only need the findChild() function in the Trie class, if you need anything else
-       * just DM me and I will make it happen. It should not be that crazy bad to solve (hopefully) and if it is
-       * then also you can DM me and I will help out.
-       *
-       * Check that we have found 20 words, and be chillin and grillin. Good luck guys.
-       */
       Word[] myWords = new Word[20];  // assuming 20 words are found
 
-
+      /* 
+       * this prints the grid, debugging purposes
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           System.out.print(board[i][j] + " ");
         }
         System.out.println();
       }
+      */
 
-
+      // get the starting letter for the word search at each and every cell
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-          //System.out.println("New set:");
+          // get the letter
+          Node letterOne = gameTree.findChild((byte)board[i][j], null);
 
-          //killed parent nodes :steamhappy:
-          Node shart = gameTree.findChild((byte)board[i][j], null);
-          if(shart != null){
-            //stringbuilder is veri good to avoid making too many strings since strings are immutable
+          if(letterOne != null){
+            //stringbuilder is very good to avoid making too many strings since strings are immutable
             StringBuilder pref = new StringBuilder().append(board[i][j]);
-            Location toPass= pool[i][j];
-            myWords = getConnectingWords(board, myWords, new Location(i,j), new ArrayList<Location>(), shart, pref);
+
+            // this is the starting location pointer
+            Location toPass = pool[i][j];
+
+            // call recursive function
+            myWords = getConnectingWords(board, myWords, toPass, new ArrayList<Location>(), letterOne, pref);
           }
         }
       }
-
-
 
       /*
       for (int i = 0; i < 20; i++) {
