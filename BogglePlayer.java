@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
 
 public class BogglePlayer {
   // variables we will need for later on
@@ -37,13 +36,7 @@ public class BogglePlayer {
 
   // instead of shuffling the array around we can use this for more efficient
   // operations
-  PriorityQueue<Word> toBeDumped = new PriorityQueue<>((a, b) -> { // honestly not sure if this is the fastest way to do
-                                                                   // this
-    int wordlen = Integer.compare(b.getWord().length(), a.getWord().length()); // need a comparator to sort the words
-    if (wordlen != 0)
-      return wordlen;
-    return a.getWord().compareTo(b.getWord());
-  });
+  Heap toBeDumped = new Heap();
 
   // initialize BogglePlayer with a file of English words
   public BogglePlayer(String wordFile) throws IOException {
@@ -98,7 +91,6 @@ public class BogglePlayer {
     path.add(curPos);
 
     if (curNode.isWord) {
-
       // add to array and then create a new word
       curNode.isWord = false;
 
@@ -106,7 +98,7 @@ public class BogglePlayer {
       // its better though since we use a string builder
       String wordFound = pref.toString();
       // System.out.println("[*] Found word: " + wordFound);
-
+      
       // create a copy word of current path and add that to array
       Word temp = new Word();
       temp.setWord(wordFound);
@@ -114,7 +106,8 @@ public class BogglePlayer {
       for (Location cur : path) {
         temp.addLetterRowAndCol(cur.row, cur.col);
       }
-      toBeDumped.offer(temp);
+      
+      toBeDumped.add(temp);
     }
 
     // integrated possible locations into getConnectingWords
@@ -188,27 +181,28 @@ public class BogglePlayer {
         // get the letter
         Node letterOne = gameTree.findChild((byte) board[i][j], null);
 
-        if (letterOne != null) {
-          // stringbuilder is very good to avoid making too many strings since strings are
-          // immutable
-          path.clear();
-          StringBuilder pref = new StringBuilder().append(board[i][j]);
+        if (letterOne == null)
+          continue;
 
-          // this is the starting location pointer
-          Location toPass = pool[i][j];
+        // stringbuilder is very good to avoid making too many strings since strings are
+        // immutable
+        path.clear();
+        StringBuilder pref = new StringBuilder().append(board[i][j]);
 
-          // call recursive function
-          // we dont grab a list of words anymore because we made getConnectingWords a
-          // void
-          // the global priorityqueue handles saving our words
-          getConnectingWords(board, myWords, toPass, path, letterOne, pref);
-        }
+        // this is the starting location pointer
+        Location toPass = pool[i][j];
+
+        // call recursive function
+        // we dont grab a list of words anymore because we made getConnectingWords a
+        // void
+        // the global priorityqueue handles saving our words
+        getConnectingWords(board, myWords, toPass, path, letterOne, pref);
       }
     }
 
     // logn time since it grabs from pqueue
-    for (int i = 0; i < 20 && !toBeDumped.isEmpty(); i++) {
-      myWords[i] = toBeDumped.poll();
+    for (int i = 0; i < 20 && toBeDumped.size > 0; i++) {
+      myWords[i] = toBeDumped.remove();
     }
 
     /*
