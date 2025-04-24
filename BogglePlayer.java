@@ -18,39 +18,69 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class BogglePlayer
-{
-    // variables we will need for later on
-    private Trie gameTree;
-    private boolean[][] used;
+public class BogglePlayer {
+  // variables we will need for later on
+  private Trie gameTree;
+  private boolean[][] used;
 
-    // make it so we dont end up making so many location objects
-    // this appears to actually have improved score so thats awesome
-    private static final Location[][] pool = new Location[4][4];
-    static {
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
-                pool[r][c] = new Location(r, c);
-            }
-        }
+  // make it so we dont end up making so many location objects
+  // this appears to actually have improved score so thats awesome
+  private static final Location[][] pool = new Location[4][4];
+  static {
+    for (int r = 0; r < 4; r++) {
+      for (int c = 0; c < 4; c++) {
+        pool[r][c] = new Location(r, c);
+      }
+    }
+  }
+
+  // instead of shuffling the array around we can use this for more efficient
+  // operations
+  Heap toBeDumped = new Heap();
+
+  // initialize BogglePlayer with a file of English words
+  public BogglePlayer(String wordFile) throws IOException {
+    // initialize tree
+    gameTree = new Trie();
+    used = new boolean[4][4];
+
+    // Read the dictionary
+    BufferedReader file = new BufferedReader(new FileReader(wordFile));
+    String line;
+
+    // for each line, make sure we got a trie going
+    while ((line = file.readLine()) != null) {
+      line = line.trim().toUpperCase();
+      Node curNode = null;
+
+      for (int i = 0; i < line.length(); i++) {
+        char cur = line.charAt(i);
+
+        curNode = gameTree.add((byte) cur, curNode);
+
+        if (i == line.length() - 1 && i >= 2)
+          curNode.isWord = true;
+      }
     }
 
-    // initialize BogglePlayer with a file of English words
-    public BogglePlayer(String wordFile) throws IOException
-    {
-        // initialize tree
-        gameTree = new Trie();
-        used = new boolean[4][4];
+    System.out.println("Num nodes: " + gameTree.size);
 
-        // Read the dictionary
-        BufferedReader file = new BufferedReader(new FileReader(wordFile));
-        String line;
+    file.close();
+  }
 
-        // for each line, make sure we got a trie going
-        while ( (line = file.readLine()) != null) {
-          line = line.trim().toUpperCase();
-          Node curNode = null;
+  // based on the board, find valid words
+  //
+  // board: 4x4 board, each element is a letter, 'Q' represents "QU",
+  // first dimension is row, second dimension is column
+  // ie, board[row][col]
+  //
+  // Return at most 20 valid words in UPPERCASE and
+  // their paths of locations on the board in myWords;
+  //
+  // See Word.java for details of the Word class and
+  // Location.java for details of the Location class
 
+<<<<<<< HEAD
           for (int i = 0; i < line.length(); i++) {
 
             curNode = gameTree.add(line.substring(i,i+1), curNode);
@@ -60,148 +90,137 @@ public class BogglePlayer
           }
         }
         gameTree.setsuffixes(gameTree.root,gameTree.root);
+=======
+  // gets the current usable locations while using the used[][] as context
+  // this will get all words from position starting with curPos
+  // this is also recursive
+  // less operations and logn time since we are using a priorityqueue now
+  public void getConnectingWords(char[][] board, Word[] words, Location curPos, ArrayList<Location> path,
+      Node curNode, StringBuilder pref) {
+    // add what we added to the current word
+    used[curPos.row][curPos.col] = true;
+    path.add(curPos);
 
-        System.out.println("Num nodes: " + gameTree.size);
+    if (curNode.isWord) {
+      // add to array and then create a new word
+      curNode.isWord = false;
 
-        file.close();
+      // mfw we have to make a string object
+      // its better though since we use a string builder
+      String wordFound = pref.toString();
+      // System.out.println("[*] Found word: " + wordFound);
+      
+      // create a copy word of current path and add that to array
+      Word temp = new Word();
+      temp.setWord(wordFound);
+>>>>>>> 0cc22019458d34c7e1d177c188b3a518a191ad79
+
+      for (Location cur : path) {
+        temp.addLetterRowAndCol(cur.row, cur.col);
+      }
+      
+      toBeDumped.add(temp);
     }
 
-    // based on the board, find valid words
-    //
-    // board: 4x4 board, each element is a letter, 'Q' represents "QU",
-    //    first dimension is row, second dimension is column
-    //    ie, board[row][col]
-    //
-    // Return at most 20 valid words in UPPERCASE and
-    //    their paths of locations on the board in myWords;
-    //
-    // See Word.java for details of the Word class and
-    //     Location.java for details of the Location class
+    // integrated possible locations into getConnectingWords
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j <= 1; j++) {
+        // in case we are looking at the current location
+        if (i == 0 && j == 0)
+          continue;
 
-    // gets the current usable locations while using the used[][] as context
-    public Location[] getUsableLocations(Location cur) {
-      int idx = 0;
-      Location[] ret = new Location[8];
+        // location pool indexes
+        int xx = curPos.row + i;
+        int yy = curPos.col + j;
 
-      // iterate through each possible offset
-      for (int i = 1; i >= -1; i--) {
-        for (int j = 1; j >= -1; j--) {
-          // in case we are looking at the current location
-          if (i == 0 && j == 0)
-            continue;
+        // in case we are out of bounds
+        if (xx > 3 || yy > 3 || xx < 0 || yy < 0)
+          continue;
 
-          //location pool indexes
-          int xx = cur.row + i;
-          int yy = cur.col + j;
+        // in case the spot is already in use
+        if (used[xx][yy])
+          continue;
 
-          // in case we are out of bounds
-          if (xx > 3 || yy > 3 || xx < 0 || yy < 0)
-            continue;
-
-          // in case the spot is already in use
-          if (used[xx][yy])
-            continue;
-
-
-          ret[idx] = pool[xx][yy];
-          idx++;
-        }
-      }
-
-      return ret;
-    }
-
-    // this will get all words from position starting with curPos
-    // this is also recursive
-    public Word[] getConnectingWords(char[][] board, Word[] words, Location curPos, ArrayList<Location> path, Node curNode, StringBuilder pref) {
-      // add what we added to the current word
-      used[curPos.row][curPos.col] = true;
-      path.add(curPos);
-      int addIdx = -1;
-
-      // check to see if current node makes a full word
-      if (curNode.isWord) {
-        // find an index to add to in the array
-        for (int i = 0; i < 20; i++) {
-          // if empty spot
-          if (words[i] == null) {
-            addIdx = i;
-
-            break;
-          }
-        }
-
-        // in case array is full, we must see if this new string is better than at least one item in the array
-        if (addIdx == -1) {
-          int worstIdx = 0;
-
-          for (int i = 1; i < 20; i++) {
-            if (words[i].getWord().length() < words[worstIdx].getWord().length())
-              worstIdx = i;
-          }
-
-          if (words[worstIdx].getWord().length() < path.size())
-            addIdx = worstIdx;
-        }
-      }
-
-      // if we found an index to add to
-      if (addIdx > -1) {
-        // add to array and then create a new word
-        curNode.isWord = false;
-
-        // mfw we have to make a string object
-        // its better though since we use a string builder
-        String wordFound = pref.toString();
-        //System.out.println("[*] Found word: " + wordFound);
-
-        // create a copy word of current path and add that to array
-        Word temp = new Word();
-        temp.setWord(wordFound);
-
-        for (Location cur: path) {
-          temp.addLetterRowAndCol(cur.row, cur.col);
-        }
-
-        words[addIdx] = temp;
-      }
-
-      // this is the part where we look through child nodes to recursively call
-      Location[] allPossibleLocations = getUsableLocations(curPos);
-
-      // iterate through each location
-      for (Location connection: allPossibleLocations) {
-        // in case we are done
-        if (connection == null)
-          break;
-
-        //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
+        // System.out.println("Trying coordinates: (" + connection.row + ", " +
+        // connection.col + ") - " + board[connection.row][connection.col] + " FROM (" +
+        // curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
         // check to see if current word path exists
+<<<<<<< HEAD
         char letter = board[connection.row][connection.col];
+=======
+        Location nextLoc = pool[xx][yy];
+        byte letter = (byte) board[xx][yy];
+>>>>>>> 0cc22019458d34c7e1d177c188b3a518a191ad79
         Node childNode = gameTree.findChild(letter, curNode);
 
         // if it does exist, recursive call
         if (childNode != null) {
-          //System.out.println("Child node: " + (char) childNode.data);
+          // System.out.println("Child node: " + (char) childNode.data);
           // add the letter we are using
+<<<<<<< HEAD
           pref.append(letter);
+=======
+          pref.append((char) letter);
+>>>>>>> 0cc22019458d34c7e1d177c188b3a518a191ad79
 
           // recursive call
-          words = getConnectingWords(board, words, connection, path, childNode, pref);
-          
+          getConnectingWords(board, words, nextLoc, path, childNode, pref);
+
           // make sure we are overwriting the letter we just added since we are done
-          pref.setLength(pref.length()-1);
+          pref.setLength(pref.length() - 1);
         }
       }
 
-      // reverse what we added
-      used[curPos.row][curPos.col] = false;
-      path.remove(path.size() - 1);
+    }
+    // reverse what we added
+    // something to note is that it dies when its in the previous block (i put a }
+    // in the wrong place)
+    used[curPos.row][curPos.col] = false;
+    path.remove(path.size() - 1);
+  }
 
-      return words;
+  public Word[] getWords(char[][] board) {
+    Word[] myWords = new Word[20]; // assuming 20 words are found
+
+    /*
+     * this prints the grid, debugging purposes
+     * for (int i = 0; i < 4; i++) {
+     * for (int j = 0; j < 4; j++) {
+     * System.out.print(board[i][j] + " ");
+     * }
+     * System.out.println();
+     * }
+     */
+
+    ArrayList<Location> path = new ArrayList<>(16);
+
+    // get the starting letter for the word search at each and every cell
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        // get the letter
+        Node letterOne = gameTree.findChild((byte) board[i][j], null);
+
+        if (letterOne == null)
+          continue;
+
+        // stringbuilder is very good to avoid making too many strings since strings are
+        // immutable
+        path.clear();
+        StringBuilder pref = new StringBuilder().append(board[i][j]);
+
+        // this is the starting location pointer
+        Location toPass = pool[i][j];
+
+        // call recursive function
+        // we dont grab a list of words anymore because we made getConnectingWords a
+        // void
+        // the global priorityqueue handles saving our words
+        getConnectingWords(board, myWords, toPass, path, letterOne, pref);
+      }
     }
 
+<<<<<<< HEAD
     public Word[] getWords(char[][] board)
     {
       Word[] myWords = new Word[20];  // assuming 20 words are found
@@ -249,6 +268,29 @@ public class BogglePlayer
       */
 
       return myWords;
+=======
+    // logn time since it grabs from pqueue
+    for (int i = 0; i < 20 && toBeDumped.size > 0; i++) {
+      myWords[i] = toBeDumped.remove();
+>>>>>>> 0cc22019458d34c7e1d177c188b3a518a191ad79
     }
+
+    /*
+     * for (int i = 0; i < 20; i++) {
+     * System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() +
+     * "): ");
+     * 
+     * for (int j = 0; j < myWords[i].getPathLength(); j++) {
+     * System.out.print("(" + myWords[i].getLetterRow(j) + ", " +
+     * myWords[i].getLetterCol(j) + "), ");
+     * }
+     * 
+     * System.out.println();
+     * 
+     * }
+     */
+
+    return myWords;
+  }
 
 }
