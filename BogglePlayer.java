@@ -52,14 +52,14 @@ public class BogglePlayer
           Node curNode = null;
 
           for (int i = 0; i < line.length(); i++) {
-            char cur = line.charAt(i);
 
-            curNode = gameTree.add((byte) cur, curNode);
+            curNode = gameTree.add(line.substring(i,i+1), curNode);
 
             if (i == line.length() - 1 && i >= 2)
               curNode.isWord = true;
           }
         }
+        //gameTree.setsuffixes();
 
         System.out.println("Num nodes: " + gameTree.size);
 
@@ -178,14 +178,14 @@ public class BogglePlayer
         //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
         // check to see if current word path exists
-        byte letter = (byte) board[connection.row][connection.col];
+        char letter = board[connection.row][connection.col];
         Node childNode = gameTree.findChild(letter, curNode);
 
         // if it does exist, recursive call
         if (childNode != null) {
           //System.out.println("Child node: " + (char) childNode.data);
           // add the letter we are using
-          pref.append((char)letter);
+          pref.append(letter);
 
           // recursive call
           words = getConnectingWords(board, words, connection, path, childNode, pref);
@@ -220,7 +220,7 @@ public class BogglePlayer
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           // get the letter
-          Node letterOne = gameTree.findChild((byte)board[i][j], null);
+          Node letterOne = gameTree.findChild(board[i][j], null);
 
           if(letterOne != null){
             //stringbuilder is very good to avoid making too many strings since strings are immutable

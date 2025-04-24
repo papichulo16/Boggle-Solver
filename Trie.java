@@ -22,7 +22,7 @@ public class Trie {
     // this function returns the child node with data equivalent to target from a given parent
     // returns null if no child is found
     // if parentNode is null, then we are looking at the first character of a string
-    public Node findChild(byte target, Node parentNode) {
+    public Node findChild(char target, Node parentNode) {
         Node current;
 
         if (parentNode != null)
@@ -32,10 +32,10 @@ public class Trie {
         }
 
         while (current != null) {
-            if (current.data == target)
+            if (current.data.charAt(0) == target)
                 break;
 
-            if (current.data > target)
+            if (current.data.charAt(0) > target)
                 return null;
 
             current = current.sibling;
@@ -46,10 +46,10 @@ public class Trie {
 
     // given a parent node (aka the previous letter), it will either create a new Node as a child or find an equivalent child
     // if parentNode field is null, it will assume that youre trying to add the first letter
-    public Node add(byte newChar, Node parentNode) {
+    public Node add(String newChar, Node parentNode) {
         // in case there is no root
         if (this.root == null) {
-            this.root = new Node((byte) 0);
+            this.root = new Node(null);
             this.size++;
         }
 
@@ -65,18 +65,19 @@ public class Trie {
             Node ret = new Node(newChar);
             this.size++;
             parentNode.child = ret;
+            ret.parent = parentNode;
 
             return ret;
         }
 
         // in case the current node is what we are looking for
-        if (current.data == newChar)
+        if (current.data.equals(newChar))
             return current;
 
         // go through the siblings
         while (current.sibling != null) {
             // if the current node is what we are looking for
-            if (current.sibling.data == newChar)
+            if (current.sibling.data.equals(newChar))
                 return current.sibling;
 
             current = current.sibling;
@@ -88,6 +89,26 @@ public class Trie {
         current.sibling = ret;
 
         return ret;
+    }
+
+    public void setsuffixes() {
+        Node current = this.root;
+
+        while (current.child != null) {
+            current = current.child;
+        }
+
+        while (current != this.root) {
+            if (current.sibling == null && current.child == null && current.child.isWord) {
+                current.parent.data += current.data;
+                current.parent.child = null;
+                current = current.parent;
+                current.isWord == true;
+            }
+            else if (current.sibling != null) {
+
+            }
+        }
     }
 
 }
