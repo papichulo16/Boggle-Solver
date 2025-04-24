@@ -88,37 +88,6 @@ public class BogglePlayer {
   // Location.java for details of the Location class
 
   // gets the current usable locations while using the used[][] as context
-  public Location[] getUsableLocations(Location cur) {
-    int idx = 0;
-    Location[] ret = new Location[8];
-
-    // iterate through each possible offset
-    for (int i = 1; i >= -1; i--) {
-      for (int j = 1; j >= -1; j--) {
-        // in case we are looking at the current location
-        if (i == 0 && j == 0)
-          continue;
-
-        // location pool indexes
-        int xx = cur.row + i;
-        int yy = cur.col + j;
-
-        // in case we are out of bounds
-        if (xx > 3 || yy > 3 || xx < 0 || yy < 0)
-          continue;
-
-        // in case the spot is already in use
-        if (used[xx][yy])
-          continue;
-
-        ret[idx] = pool[xx][yy];
-        idx++;
-      }
-    }
-
-    return ret;
-  }
-
   // this will get all words from position starting with curPos
   // this is also recursive
   // less operations and logn time since we are using a priorityqueue now
@@ -148,38 +117,52 @@ public class BogglePlayer {
       toBeDumped.offer(temp);
     }
 
-    // this is the part where we look through child nodes to recursively call
-    Location[] allPossibleLocations = getUsableLocations(curPos);
+    // integrated possible locations into getConnectingWords
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j <= 1; j++) {
+        // in case we are looking at the current location
+        if (i == 0 && j == 0)
+          continue;
 
-    // iterate through each location
-    for (Location connection : allPossibleLocations) {
-      // in case we are done
-      if (connection == null)
-        break;
+        // location pool indexes
+        int xx = curPos.row + i;
+        int yy = curPos.col + j;
 
-      // System.out.println("Trying coordinates: (" + connection.row + ", " +
-      // connection.col + ") - " + board[connection.row][connection.col] + " FROM (" +
-      // curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
+        // in case we are out of bounds
+        if (xx > 3 || yy > 3 || xx < 0 || yy < 0)
+          continue;
 
-      // check to see if current word path exists
-      byte letter = (byte) board[connection.row][connection.col];
-      Node childNode = gameTree.findChild(letter, curNode);
+        // in case the spot is already in use
+        if (used[xx][yy])
+          continue;
 
-      // if it does exist, recursive call
-      if (childNode != null) {
-        // System.out.println("Child node: " + (char) childNode.data);
-        // add the letter we are using
-        pref.append((char) letter);
+        // System.out.println("Trying coordinates: (" + connection.row + ", " +
+        // connection.col + ") - " + board[connection.row][connection.col] + " FROM (" +
+        // curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
-        // recursive call
-        getConnectingWords(board, words, connection, path, childNode, pref);
+        // check to see if current word path exists
+        Location nextLoc = pool[xx][yy];
+        byte letter = (byte) board[xx][yy];
+        Node childNode = gameTree.findChild(letter, curNode);
 
-        // make sure we are overwriting the letter we just added since we are done
-        pref.setLength(pref.length() - 1);
+        // if it does exist, recursive call
+        if (childNode != null) {
+          // System.out.println("Child node: " + (char) childNode.data);
+          // add the letter we are using
+          pref.append((char) letter);
+
+          // recursive call
+          getConnectingWords(board, words, nextLoc, path, childNode, pref);
+
+          // make sure we are overwriting the letter we just added since we are done
+          pref.setLength(pref.length() - 1);
+        }
       }
-    }
 
+    }
     // reverse what we added
+    // something to note is that it dies when its in the previous block (i put a }
+    // in the wrong place)
     used[curPos.row][curPos.col] = false;
     path.remove(path.size() - 1);
   }
