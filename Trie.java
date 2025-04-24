@@ -11,7 +11,8 @@
 */
 
 public class Trie {
-    public Node root;
+    // Initialize nodes to not create a new one every add or search
+    public Node root,current;
     public int size;
 
     public Trie() {
@@ -23,7 +24,7 @@ public class Trie {
     // returns null if no child is found
     // if parentNode is null, then we are looking at the first character of a string
     public Node findChild(byte target, Node parentNode) {
-        Node current;
+        //Node current;
 
         if (parentNode != null)
             current = parentNode.child;
@@ -58,7 +59,7 @@ public class Trie {
             parentNode = this.root;
 
         // search to see if the node we are creating already exists
-        Node current = parentNode.child;
+        current = parentNode.child;
 
         // in case there are no children
         if (current == null) {

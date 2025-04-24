@@ -41,6 +41,8 @@ public class BogglePlayer
         // initialize tree
         gameTree = new Trie();
         used = new boolean[4][4];
+        // initialize curNode as to not create a new node on each iteration
+        Node curNode;
 
         // Read the dictionary
         BufferedReader file = new BufferedReader(new FileReader(wordFile));
@@ -49,7 +51,7 @@ public class BogglePlayer
         // for each line, make sure we got a trie going
         while ( (line = file.readLine()) != null) {
           line = line.trim().toUpperCase();
-          Node curNode = null;
+          curNode = null;
 
           for (int i = 0; i < line.length(); i++) {
             char cur = line.charAt(i);
@@ -80,7 +82,10 @@ public class BogglePlayer
 
     // gets the current usable locations while using the used[][] as context
     public Location[] getUsableLocations(Location cur) {
-      int idx = 0;
+      // positions are initialized outside loop so that they can be reused
+        int idx = 0;
+        int xx = 0;
+        int yy = 0;
       Location[] ret = new Location[8];
 
       // iterate through each possible offset
@@ -91,8 +96,8 @@ public class BogglePlayer
             continue;
 
           //location pool indexes
-          int xx = cur.row + i;
-          int yy = cur.col + j;
+          xx = cur.row + i;
+          yy = cur.col + j;
 
           // in case we are out of bounds
           if (xx > 3 || yy > 3 || xx < 0 || yy < 0)
@@ -215,22 +220,28 @@ public class BogglePlayer
         System.out.println();
       }
       */
-
+        // Make a StringBuilder,location, and node outside for loop so a new one does not have to be made on each iteration
+        StringBuilder pref = new StringBuilder();
+        Node letterOne = null;
+        Location toPass;
       // get the starting letter for the word search at each and every cell
-      for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           // get the letter
-          Node letterOne = gameTree.findChild((byte)board[i][j], null);
+          letterOne = gameTree.findChild((byte)board[i][j], null);
 
           if(letterOne != null){
             //stringbuilder is very good to avoid making too many strings since strings are immutable
-            StringBuilder pref = new StringBuilder().append(board[i][j]);
+            pref.append(board[i][j]);
 
             // this is the starting location pointer
-            Location toPass = pool[i][j];
+            toPass = pool[i][j];
 
             // call recursive function
             myWords = getConnectingWords(board, myWords, toPass, new ArrayList<Location>(), letterOne, pref);
+
+            // backtrack for reset
+            pref.setLength(pref.length()-1);
           }
         }
       }
