@@ -35,7 +35,8 @@ public class BogglePlayer {
     }
   }
 
-  //instead of shuffling the array around we can use this for more efficient operations
+  // instead of shuffling the array around we can use this for more efficient
+  // operations
   PriorityQueue<Word> toBeDumped = new PriorityQueue<>((a, b) -> { // honestly not sure if this is the fastest way to do
                                                                    // this
     int wordlen = Integer.compare(b.getWord().length(), a.getWord().length()); // need a comparator to sort the words
@@ -196,6 +197,8 @@ public class BogglePlayer {
      * }
      */
 
+    ArrayList<Location> path = new ArrayList<>(16);
+
     // get the starting letter for the word search at each and every cell
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
@@ -205,20 +208,22 @@ public class BogglePlayer {
         if (letterOne != null) {
           // stringbuilder is very good to avoid making too many strings since strings are
           // immutable
+          path.clear();
           StringBuilder pref = new StringBuilder().append(board[i][j]);
 
           // this is the starting location pointer
           Location toPass = pool[i][j];
 
           // call recursive function
-          //we dont grab a list of words anymore because we made getConnectingWords a void
-          //the global priorityqueue handles saving our words
-          getConnectingWords(board, myWords, toPass, new ArrayList<Location>(), letterOne, pref);
+          // we dont grab a list of words anymore because we made getConnectingWords a
+          // void
+          // the global priorityqueue handles saving our words
+          getConnectingWords(board, myWords, toPass, path, letterOne, pref);
         }
       }
     }
 
-    //logn time since it grabs from pqueue
+    // logn time since it grabs from pqueue
     for (int i = 0; i < 20 && !toBeDumped.isEmpty(); i++) {
       myWords[i] = toBeDumped.poll();
     }
