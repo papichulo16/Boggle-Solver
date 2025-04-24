@@ -53,10 +53,20 @@ public class BogglePlayer
           line = line.trim().toUpperCase();
           curNode = null;
 
+          if (line.length() < 3) {
+              continue;
+          }
           for (int i = 0; i < line.length(); i++) {
-            char cur = line.charAt(i);
+              String cur = "";
+              if (line.length()%2 == 0) {
+                cur = line.substring(i, i + 2);
+                i++;
+            }
+            else {
+                cur = line.substring(i,i+1);
+            }
 
-            curNode = gameTree.add((byte) cur, curNode);
+            curNode = gameTree.add(cur, curNode);
 
             if (i == line.length() - 1 && i >= 2)
               curNode.isWord = true;
@@ -126,6 +136,7 @@ public class BogglePlayer
 
       // check to see if current node makes a full word
       if (curNode.isWord) {
+          System.out.print("word found");
         // find an index to add to in the array
         for (int i = 0; i < 20; i++) {
           // if empty spot
@@ -183,8 +194,8 @@ public class BogglePlayer
         //System.out.println("Trying coordinates: (" + connection.row + ", " + connection.col + ") - " + board[connection.row][connection.col] + " FROM (" + curPos.row + ", " + curPos.col + ") - " + board[curPos.row][curPos.col]);
 
         // check to see if current word path exists
-        byte letter = (byte) board[connection.row][connection.col];
-        Node childNode = gameTree.findChild(letter, curNode);
+        char letter = (char) board[connection.row][connection.col];
+        Node childNode = gameTree.findChild(Character.toString(letter), curNode);
 
         // if it does exist, recursive call
         if (childNode != null) {
@@ -228,7 +239,7 @@ public class BogglePlayer
         for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           // get the letter
-          letterOne = gameTree.findChild((byte)board[i][j], null);
+          letterOne = gameTree.findChild(Character.toString((char)board[i][j]), null);
 
           if(letterOne != null){
             //stringbuilder is very good to avoid making too many strings since strings are immutable

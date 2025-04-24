@@ -11,14 +11,14 @@
 */
 
 public class Node {
-    public byte data;
+    public String data;
 
     public Node sibling;
     public Node child;
 
     public boolean isWord;
 
-    public Node(byte data) {
+    public Node(String data) {
         this.data = data;
         this.sibling = null;
         this.child = null;
