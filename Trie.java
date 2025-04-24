@@ -90,24 +90,20 @@ public class Trie {
         return ret;
     }
 
-    public void setsuffixes() {
-        Node current = this.root;
-
-        while (current.child != null) {
-            current = current.child;
+    public void setsuffixes(Node current,Node parent) {
+        if (current.child != null) {
+            setsuffixes(current.child,current);
         }
-
-        while (current != this.root) {
-            if (current.sibling == null && current.child == null && current.child.isWord) {
-                current.parent.data += current.data;
-                current.parent.child = null;
-                current = current.parent;
-                current.isWord = true;
+        if (current.sibling == null) {
+            if (current.isWord) {
+                parent.data += current.data;
+                parent.child = null;
+                parent.isWord = true;
+                size--;
             }
-            else if (current.sibling != null) {
-
-            }
+        }
+        else {
+            setsuffixes(current.sibling,current);
         }
     }
-
 }

@@ -59,7 +59,7 @@ public class BogglePlayer
               curNode.isWord = true;
           }
         }
-        //gameTree.setsuffixes();
+        gameTree.setsuffixes(gameTree.root,gameTree.root);
 
         System.out.println("Num nodes: " + gameTree.size);
 
