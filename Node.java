@@ -15,12 +15,10 @@ public class Node {
 
     public Node sibling;
     public Node child;
-    public Node parent;
     public boolean isWord;
 
     public Node(String data) {
         this.data = data;
-        this.parent = null;
         this.sibling = null;
         this.child = null;
         this.isWord = false;

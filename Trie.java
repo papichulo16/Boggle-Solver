@@ -65,7 +65,6 @@ public class Trie {
             Node ret = new Node(newChar);
             this.size++;
             parentNode.child = ret;
-            ret.parent = parentNode;
 
             return ret;
         }
@@ -103,7 +102,7 @@ public class Trie {
                 current.parent.data += current.data;
                 current.parent.child = null;
                 current = current.parent;
-                current.isWord == true;
+                current.isWord = true;
             }
             else if (current.sibling != null) {
 
