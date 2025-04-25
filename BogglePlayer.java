@@ -143,11 +143,21 @@ public class BogglePlayer {
           // System.out.println("Child node: " + (char) childNode.data);
           // add the letter we are using
           pref.append((char) letter);
+          
+          // if the letter is a Q, we have to make it count as QU
+          if ((char) letter == 'Q') {
+            pref.append('U');
+            childNode = gameTree.findChild((byte) 'U', childNode);
+          }
 
           // recursive call
           getConnectingWords(board, words, nextLoc, path, childNode, pref);
 
           // make sure we are overwriting the letter we just added since we are done
+          // make sure we double reverse the QU
+          if ((char) letter == 'Q')
+            pref.setLength(pref.length() - 1);
+          
           pref.setLength(pref.length() - 1);
         }
       }
@@ -163,15 +173,15 @@ public class BogglePlayer {
   public Word[] getWords(char[][] board) {
     Word[] myWords = new Word[20]; // assuming 20 words are found
 
-    /*
-     * this prints the grid, debugging purposes
-     * for (int i = 0; i < 4; i++) {
-     * for (int j = 0; j < 4; j++) {
-     * System.out.print(board[i][j] + " ");
-     * }
-     * System.out.println();
-     * }
-     */
+    /* 
+     // this prints the grid, debugging purposes
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        System.out.print(board[i][j] + " ");
+      }
+     System.out.println();  
+    }
+    */
 
     ArrayList<Location> path = new ArrayList<>(16);
 
@@ -201,24 +211,36 @@ public class BogglePlayer {
     }
 
     // logn time since it grabs from pqueue
-    for (int i = 0; i < 20 && toBeDumped.size > 0; i++) {
+    for (int i = 0; i < 20 && toBeDumped.size >= 0; i++) {
+      // in case there are fewer than 20 words, create a new array of a different size
+      if (toBeDumped.size == 0) {
+        Word[] temp = new Word[i];
+        
+        for (int j = 0; j < i; j++)
+          temp[j] = myWords[j];
+        
+        myWords = temp;
+        
+        break;
+      }
+
       myWords[i] = toBeDumped.remove();
     }
-
-    /*
-     * for (int i = 0; i < 20; i++) {
-     * System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() +
-     * "): ");
-     * 
-     * for (int j = 0; j < myWords[i].getPathLength(); j++) {
-     * System.out.print("(" + myWords[i].getLetterRow(j) + ", " +
-     * myWords[i].getLetterCol(j) + "), ");
-     * }
-     * 
-     * System.out.println();
-     * 
-     * }
-     */
+    
+    /* 
+    for (int i = 0; i < myWords.length; i++) {
+      System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() +
+      "): ");
+      
+      for (int j = 0; j < myWords[i].getPathLength(); j++) {
+      System.out.print("(" + myWords[i].getLetterRow(j) + ", " +
+      myWords[i].getLetterCol(j) + "), ");
+      }
+      
+      System.out.println();
+      
+      }
+      */
 
     return myWords;
   }

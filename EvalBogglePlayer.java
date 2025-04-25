@@ -291,7 +291,7 @@ public class EvalBogglePlayer {
         if (!dictionary.contains(word.getWord().toUpperCase())) {
             return -((length - 2) * (length - 2));
         }
-
+        
         return (length - 2) * (length - 2);
     }
 
