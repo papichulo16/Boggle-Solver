@@ -94,20 +94,24 @@ public class BogglePlayer {
       // add to array and then create a new word
       curNode.isWord = false;
 
-      // mfw we have to make a string object
-      // its better though since we use a string builder
-      String wordFound = pref.toString();
-      // System.out.println("[*] Found word: " + wordFound);
-      
-      // create a copy word of current path and add that to array
-      Word temp = new Word();
-      temp.setWord(wordFound);
+      int prefLen = pref.length();
 
-      for (Location cur : path) {
-        temp.addLetterRowAndCol(cur.row, cur.col);
+      if (toBeDumped.size < 20 || prefLen > toBeDumped.peekMin()) {
+        // mfw we have to make a string object
+        // its better though since we use a string builder
+        String wordFound = pref.toString();
+        // System.out.println("[*] Found word: " + wordFound);
+
+        // create a copy word of current path and add that to array
+        Word temp = new Word();
+        temp.setWord(wordFound);
+
+        for (Location cur : path) {
+          temp.addLetterRowAndCol(cur.row, cur.col);
+        }
+
+        toBeDumped.add(temp);
       }
-      
-      toBeDumped.add(temp);
     }
 
     // integrated possible locations into getConnectingWords
@@ -143,7 +147,7 @@ public class BogglePlayer {
           // System.out.println("Child node: " + (char) childNode.data);
           // add the letter we are using
           pref.append((char) letter);
-          
+
           // if the letter is a Q, we have to make it count as QU
           if ((char) letter == 'Q') {
             pref.append('U');
@@ -157,7 +161,7 @@ public class BogglePlayer {
           // make sure we double reverse the QU
           if ((char) letter == 'Q')
             pref.setLength(pref.length() - 1);
-          
+
           pref.setLength(pref.length() - 1);
         }
       }
@@ -173,15 +177,15 @@ public class BogglePlayer {
   public Word[] getWords(char[][] board) {
     Word[] myWords = new Word[20]; // assuming 20 words are found
 
-    /* 
-     // this prints the grid, debugging purposes
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        System.out.print(board[i][j] + " ");
-      }
-     System.out.println();  
-    }
-    */
+    /*
+     * // this prints the grid, debugging purposes
+     * for (int i = 0; i < 4; i++) {
+     * for (int j = 0; j < 4; j++) {
+     * System.out.print(board[i][j] + " ");
+     * }
+     * System.out.println();
+     * }
+     */
 
     ArrayList<Location> path = new ArrayList<>(16);
 
@@ -215,32 +219,32 @@ public class BogglePlayer {
       // in case there are fewer than 20 words, create a new array of a different size
       if (toBeDumped.size == 0) {
         Word[] temp = new Word[i];
-        
+
         for (int j = 0; j < i; j++)
           temp[j] = myWords[j];
-        
+
         myWords = temp;
-        
+
         break;
       }
 
       myWords[i] = toBeDumped.remove();
     }
-    
-    /* 
-    for (int i = 0; i < myWords.length; i++) {
-      System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() +
-      "): ");
-      
-      for (int j = 0; j < myWords[i].getPathLength(); j++) {
-      System.out.print("(" + myWords[i].getLetterRow(j) + ", " +
-      myWords[i].getLetterCol(j) + "), ");
-      }
-      
-      System.out.println();
-      
-      }
-      */
+
+    /*
+     * for (int i = 0; i < myWords.length; i++) {
+     * System.out.print(myWords[i].getWord() + "(" + myWords[i].getPathLength() +
+     * "): ");
+     * 
+     * for (int j = 0; j < myWords[i].getPathLength(); j++) {
+     * System.out.print("(" + myWords[i].getLetterRow(j) + ", " +
+     * myWords[i].getLetterCol(j) + "), ");
+     * }
+     * 
+     * System.out.println();
+     * 
+     * }
+     */
 
     return myWords;
   }
